@@ -23,6 +23,8 @@
                     return item
                 }})
             })
+
+
     }
 
     function handleRemove (id) {
