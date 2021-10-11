@@ -1,61 +1,46 @@
 <script>
-    import AddTodoItem from './components/AddTodoItem.svelte'
-    import ToDoItem from './components/ToDoItem.svelte'
-    import {v4 as uuid} from "uuid";
-    import {todoItems} from './store/store.js'
+    import AddToDoItem from "./components/AddToDoItem.svelte";
+    import {todoItems} from "./store/store";
+    import {onDestroy} from "svelte";
+    import Items from "./components/Items.svelte";
+    import {v4 as uuid} from 'uuid';
 
-    function handleAddClick(event) {
-        todoItems.update(items => {
-            return [...items, {id: uuid(), text: event.detail, done: false}]
-        })
+    let items = []
+
+    const unsubscribe = todoItems.subscribe(value => {
+        items = value
+    })
+
+    function addItem(event) {
+        todoItems.update(items => [...items, {
+            id: uuid(),
+            text: event.detail,
+            done: false
+        }])
     }
 
 
-    function handleDoneChange(id, done) {
-        todoItems.update(items => {
-            return items.map(item => {
-                if (item.id === id) {
-                    return {
-                        ...item,
-                        done
-                    }
-                } else {
-                    return item
-                }})
-            })
-
-
+    function handleDoneChange (id, done){
+        items.map((item) => {
+            if (item.id === id) {
+                item.done = !done
+            }
+        })
+        todoItems.update (items => items)
     }
 
-    function handleRemove (id) {
-        todoItems.update(items  => {
-            return items.filter(item => {
-                return item.id !==id
-            })
-        })
-     }
+    function handleRemoveItem (id)  {
+        todoItems.update (items => items.filter(item => (item.id !== id)));
+    }
 
+    onDestroy(() => {
+        unsubscribe()
+    })
 
 </script>
 
-
-<div class="wrapper">
-    <AddTodoItem on:add={handleAddClick}/>
-    {#each $todoItems as {id, text, done}, index}
-        <ToDoItem title={text} id={index + 1}
-                  done={done}
-                  on:doneChange={(event) => handleDoneChange(id, event.detail)}
-                  on:remove={()=>handleRemove(id)}
-                  />
-    {:else}
-        There are no items
-    {/each}
-</div>
-
-{JSON.stringify($todoItems)}
-
-
-<style>
-
-
-</style>
+<AddToDoItem on:add = {addItem}/>
+{JSON.stringify(items)}
+{#each items as {id, text, done}}
+    <Items on:doneChange = {handleDoneChange(id, done)} on:removeClick = {handleRemoveItem(id)} text={text}/>
+{/each}

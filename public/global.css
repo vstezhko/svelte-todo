@@ -66,5 +66,8 @@ button:focus {
 	width: 80%;
 	margin: 100px auto;
 
+}
 
+.main-container, .item-container {
+	box-sizing: border-box;
 }
